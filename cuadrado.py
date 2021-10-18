@@ -39,12 +39,11 @@ def descarte(v_grande,v_peq):
     return [i for i in v_grande if i not in v_peq]
 
 # Operador SIC 1 punto
-def single_SIC(m1,m2):
+def single_SIC(m1,m2,cut):
     n = m1.shape[0]
     v1 = np.reshape(m1,n*n)
     v2 = np.reshape(m2,n*n)
     # Desde 1 hasta n^2-1 para que no nos coja los casos en los que la cabeza o la colilla están vacías
-    cut = randint(1,n*n-1) 
     head1 = v1[:cut]
     tail1 = v1[cut:]
     head2 = v2[:cut]
@@ -57,14 +56,34 @@ def single_SIC(m1,m2):
     s6 = np.reshape(np.append(descarte(v2,tail1),tail1[::-1]),(n,n))
     s7 = np.reshape(np.append(tail2[::-1],descarte(v1,tail2)),(n,n))
     s8 = np.reshape(np.append(descarte(v1,tail2),tail2[::-1]),(n,n))
-    return(s1,s2,s3,s4,s5,s6,s7,s8,cut)
+    return(s1,s2,s3,s4,s5,s6,s7,s8)
+
+# Operador SIC 2 puntos
+def double_SIC(m1,m2,cut1,cut2):
+    n = m1.shape[0]
+    v1 = np.reshape(m1,n*n)
+    v2 = np.reshape(m2,n*n)
+    # Desde 1 hasta n^2-1 para que no nos coja los casos en los que la cabeza o la colilla están vacías
+    head1 = v1[:cut1]
+    center1 = v1[cut1:cut2]
+    tail1 = v1[cut2:]
+    head2 = v2[:cut1]
+    center2 = v2[cut1:cut2]
+    tail2 = v2[cut2:]
+    s1 = np.reshape(np.append(np.append(head1[::-1],descarte(descarte(v2,head1),tail1)),tail1[::-1]),(n,n))
+    s2 = np.reshape(np.append(np.append(tail1[::-1],descarte(descarte(v2,head1),tail1)),head1[::-1]),(n,n))
+    s3 = np.reshape(np.append(np.append(head2[::-1],descarte(descarte(v1,head2),tail2)),tail2[::-1]),(n,n))
+    s4 = np.reshape(np.append(np.append(tail2[::-1],descarte(descarte(v1,head2),tail2)),head2[::-1]),(n,n))
+    return(s1,s2,s3,s4)
+
 
 ejemplo1 = cuadrado_inicial(3)
 ejemplo2 = cuadrado_inicial(3)
+
 print(ejemplo1)
 print(ejemplo2)
 print("--------------")
-var = single_SIC(ejemplo1, ejemplo2)
+var = double_SIC(ejemplo1, ejemplo2,3,6)
 for i in var[:-1]:
     print (i)
     print("--------------")
