@@ -1,6 +1,8 @@
 import numpy as np
 from numpy.random.mtrand import randint
 import random2 as rnd
+
+
 # Define el cuadrado mágico que solucionaremos nxn
 def cuadrado_inicial(n):
     matriz = np.arange(n*n)
