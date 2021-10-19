@@ -123,6 +123,13 @@ def quad_mutacion(m1):
     result = np.reshape(v1,(n,n))
     return result
 
+def peguense(m1,m2):
+    if coste(m1)>coste(m2):
+        result=m2
+    else:
+        result=m1
+    return result
+
 ejemplo1 = cuadrado_inicial(4)
 ejemplo2 = cuadrado_inicial(4)
 
