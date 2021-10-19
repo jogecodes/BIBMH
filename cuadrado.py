@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from numpy.random.mtrand import randint
 import random2 as rnd
@@ -126,15 +127,17 @@ def quad_mutacion(m1):
     return result
 
 def peguense(m1,m2):
-    if coste(m1)>coste(m2):
-        result=m2
-    else:
-        result=m1
-    return result
+    return m2 if coste(m1)>coste(m2) else m2
 
 ejemplo1 = cuadrado_inicial(4)
 ejemplo2 = cuadrado_inicial(4)
 
+# print('----------------------------')
+# print(peguense(ejemplo1,ejemplo2))
+# print('----------------------------')
+# print(ejemplo1)
+# print('----------------------------')
+# print(ejemplo2)
 # print(ejemplo1)
 # print(ejemplo2)
 # print("--------------")
