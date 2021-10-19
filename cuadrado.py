@@ -23,6 +23,9 @@ def coste(matriz):
     diff = sum(col_sum)+sum(row_sum)+p_diag_sum+s_diag_sum
     return (diff.astype(int))
 
+def descarte(v_grande,v_peq):
+    return [i for i in v_grande if i not in v_peq]
+
 # Operador de cruce Luis
 def crucelui(m1,m2):
     # n = m1.shape[0]
@@ -32,9 +35,6 @@ def crucelui(m1,m2):
     coord1 = [result1[0][0],result1[1][0]]
     coord2 = [result2[0][0],result2[1][0]]
     return (num,coord1,coord2)
-
-def descarte(v_grande,v_peq):
-    return [i for i in v_grande if i not in v_peq]
 
 # Operador SIC 1 punto
 def single_SIC(m1,m2,cut):
@@ -63,10 +63,10 @@ def double_SIC(m1,m2,cut1,cut2):
     v2 = np.reshape(m2,n*n)
     # Desde 1 hasta n^2-1 para que no nos coja los casos en los que la cabeza o la colilla están vacías
     head1 = v1[:cut1]
-    center1 = v1[cut1:cut2]
+    # center1 = v1[cut1:cut2] No es necesario
     tail1 = v1[cut2:]
     head2 = v2[:cut1]
-    center2 = v2[cut1:cut2]
+    # center2 = v2[cut1:cut2] No es necesario
     tail2 = v2[cut2:]
     s1 = np.reshape(np.append(np.append(head1[::-1],descarte(descarte(v2,head1),tail1)),tail1[::-1]),(n,n))
     s2 = np.reshape(np.append(np.append(tail1[::-1],descarte(descarte(v2,head1),tail1)),head1[::-1]),(n,n))
@@ -74,15 +74,65 @@ def double_SIC(m1,m2,cut1,cut2):
     s4 = np.reshape(np.append(np.append(tail2[::-1],descarte(descarte(v1,head2),tail2)),head2[::-1]),(n,n))
     return(s1,s2,s3,s4)
 
+# Operador mutación
+def single_mutacion(m1):
+    n = m1.shape[0]
+    v1 = np.reshape(m1,n*n)
+    a = randint(0,n*n-1)
+    b = randint(0,n*n-1)
+    while b==a:
+        b = randint(0,n*n-1)
+    aux_a = v1[a]
+    aux_b = v1[b]
+    v1[b] = aux_a
+    v1[a] = aux_b
+    result = np.reshape(v1,(n,n))
+    return result
 
-ejemplo1 = cuadrado_inicial(3)
-ejemplo2 = cuadrado_inicial(3)
+def quad_mutacion(m1):
+    n = m1.shape[0]
+    v1 = np.reshape(m1,n*n)
+    a = randint(0,n*n-1)
+    v_a = np.array(range(a,a+4))
+    for i in v_a:
+        if i>=n*n:
+            v_a[i-a]=i-n*n
+    print(v_a)
+    b = randint(0,n*n-1)
+    v_b = np.array(range(b,b+4))
+    for i in v_b:
+        if i>=n*n:
+            v_b[i-b]=i-n*n
+    while np.in1d(v_a,v_b).any() == True:
+        b = randint(0,n*n-1)
+        v_b = np.array(range(b,b+4))
+        for i in v_b:
+            if i>=n*n:
+                v_b[i-b]=i-n*n
+    print(v_b)
+    aux_a = v1[v_a]
+    aux_b = v1[v_b]
+    j=0
+    for i in v_a:
+        v1[i]=aux_b[j]
+        j+=1
+    j=0
+    for i in v_b:
+        v1[i]=aux_a[j]
+        j+=1
+    result = np.reshape(v1,(n,n))
+    return result
 
-print(ejemplo1)
-print(ejemplo2)
-print("--------------")
-var = double_SIC(ejemplo1, ejemplo2,3,6)
-for i in var[:-1]:
-    print (i)
-    print("--------------")
-print(var[-1])
+ejemplo1 = cuadrado_inicial(4)
+ejemplo2 = cuadrado_inicial(4)
+
+# print(ejemplo1)
+# print(ejemplo2)
+# print("--------------")
+# var = double_SIC(ejemplo1, ejemplo2,3,7)
+# for i in var[:-1]:
+#     print (i)
+#     print("--------------")
+# print(var[-1])
+ejemplo1 = quad_mutacion(ejemplo1)
+
