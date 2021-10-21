@@ -127,7 +127,22 @@ def quad_mutacion(m1):
     return result
 
 def peguense(m1,m2):
-    return m2 if coste(m1)>coste(m2) else m2
+    return m2 if coste(m1)>coste(m2) else m1
+
+def main(n, p):
+    genes = [cuadrado_inicial(n) for _ in range(p)]
+    genes = np.array(genes)
+    np.random.shuffle(genes)
+    n_gen = []
+    for i in range(0, genes.shape[0], 2):
+        s = quad_mutacion(genes[i], genes[i+1])
+        n_gen = g_gen + s[0] + s[1] + s[2] + s[3]
+    np.append(genes, n_gen)
+    np.random.shuffle(genes)
+    for _ in range(3):
+        l = [peguense(genes[i], genes[i+1]) for i in range(0, genes.shape[0], 2)]
+        genes = np.array(l)
+
 
 ejemplo1 = cuadrado_inicial(4)
 ejemplo2 = cuadrado_inicial(4)
