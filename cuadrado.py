@@ -130,31 +130,22 @@ def peguense(m1,m2):
     return m2 if coste(m1)>coste(m2) else m1
 
 def main(n, p):
-    # Crea una lista por comprensión con el número de genes iniciales igual al parámetro p de lado nxn
     genes = [cuadrado_inicial(n) for _ in range(p)]
     genes = np.array(genes)
     np.random.shuffle(genes)
-    for i in range(0,genes.shape[0], 2):
-        if i+1 < genes.shape[0]:
-            cut1 = randint(n*n)
-            cut2 = randint(n*n)
-            double_SIC(genes[i],genes[i+1],cut1,cut2)
+    n_gen = []
+    for i in range(0, genes.shape[0], 2):
+        s = quad_mutacion(genes[i], genes[i+1])
+        n_gen = g_gen + s[0] + s[1] + s[2] + s[3]
+    np.append(genes, n_gen)
+    np.random.shuffle(genes)
+    for _ in range(3):
+        l = [peguense(genes[i], genes[i+1]) for i in range(0, genes.shape[0], 2)]
+        genes = np.array(l)
 
 
-
-
-if __name__ == "__main__":
-    main()
-
-
-
-
-
-
-
-
-# ejemplo1 = cuadrado_inicial(4)
-# ejemplo2 = cuadrado_inicial(4)
+ejemplo1 = cuadrado_inicial(4)
+ejemplo2 = cuadrado_inicial(4)
 
 # print('----------------------------')
 # print(peguense(ejemplo1,ejemplo2))
@@ -171,4 +162,3 @@ if __name__ == "__main__":
 #     print("--------------")
 # print(var[-1])
 ejemplo1 = quad_mutacion(ejemplo1)
-
