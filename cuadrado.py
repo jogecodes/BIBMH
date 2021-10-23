@@ -81,10 +81,10 @@ def double_SIC(m1,m2,cut1,cut2):
 def single_mutacion(m1):
     n = m1.shape[0]
     v1 = np.reshape(m1,n*n)
-    a = randint(0,n*n-1)
-    b = randint(0,n*n-1)
+    a = randint(n*n-1)
+    b = randint(n*n-1)
     while b==a:
-        b = randint(0,n*n-1)
+        b = randint(n*n-1)
     aux_a = v1[a]
     aux_b = v1[b]
     v1[b] = aux_a
@@ -95,19 +95,19 @@ def single_mutacion(m1):
 def quad_mutacion(m1):
     n = m1.shape[0]
     v1 = np.reshape(m1,n*n)
-    a = randint(0,n*n-1)
+    a = randint(n*n-1)
     v_a = np.array(range(a,a+4))
     for i in v_a:
         if i>=n*n:
             v_a[i-a]=i-n*n
     print(v_a)
-    b = randint(0,n*n-1)
+    b = randint(n*n-1)
     v_b = np.array(range(b,b+4))
     for i in v_b:
         if i>=n*n:
             v_b[i-b]=i-n*n
     while np.in1d(v_a,v_b).any() == True:
-        b = randint(0,n*n-1)
+        b = randint(n*n-1)
         v_b = np.array(range(b,b+4))
         for i in v_b:
             if i>=n*n:
@@ -126,26 +126,69 @@ def quad_mutacion(m1):
     result = np.reshape(v1,(n,n))
     return result
 
+# Define la selección del mejor entre dos competidores del torneo
 def peguense(m1,m2):
     return m2 if coste(m1)>coste(m2) else m1
 
+# Define la función de torneo que gestionará cómo se organizan los enfrentamientos 
+def torneo(genes, p):
+    g_trabajo = np.copy(genes)
+    ganadores = []
+
+    while g_trabajo.shape[0] != p:
+        m1_index = np.random.choice(range(g_trabajo.shape[0]))
+        m1 = g_trabajo[m1_index]
+        g_trabajo = np.delete(g_trabajo, m1_index, axis=0)
+        print(g_trabajo)
+        m2_index = np.random.choice(range(g_trabajo.shape[0]))
+        m2 = g_trabajo[m2_index]
+        g_trabajo = np.delete(g_trabajo, m2_index, axis=0)
+        print("m1")
+        print(m1)
+        print("m2")
+        print(m2)
+        ganadores.append(peguense(m1, m2))
+        print(ganadores)
+        print(g_trabajo)
+    
+    return np.array(ganadores)
+
+# Define la función de relección proporcional
+def ruleta(genes, p):
+    aptitudes = [1/coste(i) for i in genes]
+    sum_aptitudes = sum(aptitudes)
+    probabilidades = [i/sum_aptitudes for i in aptitudes]
+    sol = []
+    for _ in range(p):
+        n_random = np.random.random(1)
+        print(n_random)
+        acc = 0
+        for i in probabilidades:
+            acc += i
+            if n_random <= acc:    
+                sol.append(genes[probabilidades.index(i)]) 
+                break
+        
+    return np.array(sol)
+
+# p tiene que ser un número de la forma 2^n por temas de eficiencia computacional
 def main(n, p):
     genes = [cuadrado_inicial(n) for _ in range(p)]
     genes = np.array(genes)
     np.random.shuffle(genes)
     n_gen = []
     for i in range(0, genes.shape[0], 2):
-        s = quad_mutacion(genes[i], genes[i+1])
-        n_gen = g_gen + s[0] + s[1] + s[2] + s[3]
+        (cut1, cut2) = randint(1, n*n, size = 2)
+        s = double_SIC(genes[i], genes[i+1], cut1, cut2)
+        n_gen = n_gen + s[0] + s[1] + s[2] + s[3]
     np.append(genes, n_gen)
     np.random.shuffle(genes)
-    for _ in range(3):
-        l = [peguense(genes[i], genes[i+1]) for i in range(0, genes.shape[0], 2)]
-        genes = np.array(l)
+# Torneo
 
 
 ejemplo1 = cuadrado_inicial(4)
 ejemplo2 = cuadrado_inicial(4)
+
 
 # print('----------------------------')
 # print(peguense(ejemplo1,ejemplo2))
@@ -161,4 +204,4 @@ ejemplo2 = cuadrado_inicial(4)
 #     print (i)
 #     print("--------------")
 # print(var[-1])
-ejemplo1 = quad_mutacion(ejemplo1)
+# ejemplo1 = quad_mutacion(ejemplo1)
