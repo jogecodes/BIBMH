@@ -2,6 +2,7 @@
 import numpy as np
 from numpy.random.mtrand import randint
 import random2 as rnd
+import statistics as s 
 
 
 # Define el cuadrado mágico que solucionaremos nxn
@@ -161,18 +162,15 @@ def torneo(genes, p):
             ganador =  peguense(ganadores[0], ganadores[1])
             ganadores = ganadores[2:]
             subset = np.vstack((ganador, ganadores))
-
+        finalistas = np.array([None])
         # t de cada subset
         t_subset = ganadores.shape[0]//p
         # creamos los subsets
-        print(ganadores)
         for i in range(0,ganadores.shape[0], t_subset):
             subset = ganadores[i:i+t_subset]
-            print(subset)
             while subset.shape[0] != 1: 
                 ronda = []
                 if subset.shape[0] % 2 != 0:
-                    print(subset)
                     ganador =  peguense(subset[0], subset[1])
                     subset = subset[2:]
                     ganador = np.reshape(ganador, (1,ganador.shape[0], ganador.shape[1]))
@@ -182,10 +180,12 @@ def torneo(genes, p):
                     ganador =  peguense(subset[j], subset[j+1])
                     ronda.append(ganador)
                 subset = np.array(ronda)
-            if finalistas:
+            
+            if finalistas.any() == None:
+                finalistas = subset
+            else: 
                 finalistas = np.vstack((finalistas, subset))
-            else:
-                finalistas = subset # mal
+    
 
         ganadores = finalistas
 
@@ -220,6 +220,8 @@ def main(n, p, prob_mutation, max_pasos):
     pasos = 0
     optimo = False
     solution = None
+    medias = []
+    minimos = []
     while pasos < max_pasos or optimo:
         # Crea los hijos y los añade al pool de genes que tenemos 
         for i in range(0, genes.shape[0], 2):
@@ -246,30 +248,39 @@ def main(n, p, prob_mutation, max_pasos):
             if n_rand <= prob_mutation:
                 genes[i] = single_mutacion(genes[i])
         
-        # Comprobación 
+        # Comprobación
+        med = []
+        min = None 
         for i in genes:
-            if coste(i) == 0:
+            c = coste(i)
+            med.append(c)
+            if min == None:
+                min = c
+            if min > c:
+                min = c
+            if c == 0:
                 solution = i
                 optimo = True
-                break
         
-        # print('Iteración ' + str(pasos))
+        medias.append(sum(med)/len(med))
+        minimos.append(min)
+
+        print('Iteración ' + str(pasos))
         for i in genes:
             print(i, coste(i))
         # Incremento de los pasos dados
         pasos += 1
 
     if solution != None:
-        return solution
+        return (medias, minimos ,solution)
     
     else:
-        return genes
+        return (medias, minimos)
 
 
-res = main(3, 8,  0.01, 1000)
+res = main(4, 64,  0.35, 100)
 
-for i in res:
-    print(i, coste(i))
+print(res)
 
 # print('----------------------------')
 # print(peguense(ejemplo1,ejemplo2))
