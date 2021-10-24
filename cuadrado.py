@@ -64,7 +64,6 @@ def single_SIC(m1,m2,cut):
 # Operador SIC 2 puntos
 def double_SIC(m1,m2,cut1,cut2):
     n = m1.shape[0]
-    print(n)
     v1 = np.reshape(m1,n*n)
     v2 = np.reshape(m2,n*n)
     # Desde 1 hasta n^2-1 para que no nos coja los casos en los que la cabeza o la colilla están vacías
@@ -132,27 +131,6 @@ def peguense(m1,m2):
     return m2 if coste(m1)>coste(m2) else m1
 
 # Define la función de torneo que gestionará cómo se organizan los enfrentamientos 
-'''def torneo(genes, p):
-    ganadores = np.copy(genes)
-    participantes = ganadores.shape[0]
-    while participantes > p:
-        ronda = []
-        np.random.shuffle(ganadores)
-        if ganadores.shape[0] % 2 != 0:
-            ganador = peguense(ganadores[0], ganadores[1])
-            ganadores = np.delete(ganadores, 0)
-            ganadores = np.delete(ganadores, 1) 
-            ganadores = np.append(ganadores, ganador)
-        for i in range(0, ganadores.shape[0], 2):
-            ronda.append(peguense(ganadores[i], ganadores[i+1]))
-            participantes -=1
-            if participantes <= p: break
-
-        ganadores = np.array(ronda)
-        print('patata')
-        print(ganadores)
-    return ganadores
-'''
 def torneo(genes, p):
     ganadores = genes.copy()
     
@@ -225,12 +203,15 @@ def main(n, p, prob_mutation, max_pasos):
     while pasos < max_pasos or optimo:
         # Crea los hijos y los añade al pool de genes que tenemos 
         for i in range(0, genes.shape[0], 2):
-            '''(cut1, cut2) = randint(1, n*n, sizs)
-            print('GENES 1')
-            print(genes[i+1])
-            s = double_SIC(genes[i], genes[i+1], cut1, cut2)'''
+            '''
+            (cut1, cut2) = randint(1, n*n, size=2)
+            while cut1 >= cut2: 
+                (cut1, cut2) = randint(1, n*n, size=2)
+            s = double_SIC(genes[i], genes[i+1], cut1, cut2)
+            '''
             cut = randint(1, n*n)
             s = single_SIC(genes[i], genes[i+1],cut)
+            
             n_gen = n_gen + list(s)
      
         genes = np.concatenate((genes, n_gen))
@@ -246,8 +227,12 @@ def main(n, p, prob_mutation, max_pasos):
         for i in range(genes.shape[0]):
             n_rand = np.random.random()
             if n_rand <= prob_mutation:
-                genes[i] = single_mutacion(genes[i])
-        
+                coin = np.random.random()
+                if coin < 0.5:
+                    genes[i] = single_mutacion(genes[i])
+                else:
+                    genes[i] = quad_mutacion(genes[i]) 
+
         # Comprobación
         med = []
         min = None 
@@ -256,31 +241,115 @@ def main(n, p, prob_mutation, max_pasos):
             med.append(c)
             if min == None:
                 min = c
+                solution = i
             if min > c:
                 min = c
+                solution = i   
             if c == 0:
-                solution = i
                 optimo = True
         
         medias.append(sum(med)/len(med))
         minimos.append(min)
 
-        print('Iteración ' + str(pasos))
+        '''print('Iteración ' + str(pasos))
         for i in genes:
             print(i, coste(i))
+            '''
         # Incremento de los pasos dados
         pasos += 1
 
-    if solution != None:
-        return (medias, minimos ,solution)
-    
-    else:
-        return (medias, minimos)
+    return (medias, minimos, solution)
+
+'''
+print('Cuadrado 4x4, Población 8, 1%')
+for _ in range(4):
+    res = main(4, 8,  0.01, 50)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Cuadrado 4x4, Población 8, 10%')
+for _ in range(4):
+    res = main(4, 8,  0.1, 50)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Cuadrado 4x4, Población 8, 30%')
+for _ in range(4):
+    res = main(4, 8,  0.3, 50)
+    print(res)
+'''
+'''
+print('Cuadrado 4x4, Población 2, 30%')
+for _ in range(4):
+    res = main(4, 2,  0.3, 50)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Cuadrado 4x4, Población 4, 30%')
+for _ in range(4):
+    res = main(4, 4,  0.3, 50)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Cuadrado 4x4, Población 16, 30%')
+for _ in range(4):
+    res = main(4, 16,  0.3, 50)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Cuadrado 4x4, Población 32, 30%')
+for _ in range(4):
+    res = main(4, 32,  0.3, 50)
+    print(res)
+print('--------------------------------------------------------------------')
+'''
+print('Cuadrado 6x6, Población 16, 30%')
+for _ in range(4):
+    res = main(6, 16,  0.3, 100)
+    print(res)
 
 
-res = main(4, 64,  0.35, 100)
 
-print(res)
+'''
+print('Población 16, 1%')
+for _ in range(10):
+    res = main(4, 16,  0.01, 100)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Población 32, 1%')
+for _ in range(10):
+    res = main(4, 32,  0.01, 100)
+    print(res)
+print('--------------------------------------------------------------------')
+
+print('Población 4, 10%')
+for _ in range(10):
+    res = main(4, 4,  0.1, 100)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Población 16, 10%')
+for _ in range(10):
+    res = main(4, 16,  0.1, 100)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Población 32, 10%')
+for _ in range(10):
+    res = main(4, 32,  0.1, 100)
+    print(res)
+
+print('--------------------------------------------------------------------')
+
+print('Población 4, 35%')
+for _ in range(10):
+    res = main(4, 4,  0.35, 100)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Población 16, 35%')
+for _ in range(10):
+    res = main(4, 16,  0.35, 100)
+    print(res)
+print('--------------------------------------------------------------------')
+print('Población 32, 35%')
+for _ in range(10):
+    res = main(4, 32,  0.35, 100)
+    print(res)
+print('--------------------------------------------------------------------')
+'''
 
 # print('----------------------------')
 # print(peguense(ejemplo1,ejemplo2))
