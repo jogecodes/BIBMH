@@ -161,18 +161,15 @@ def torneo(genes, p):
             ganador =  peguense(ganadores[0], ganadores[1])
             ganadores = ganadores[2:]
             subset = np.vstack((ganador, ganadores))
-
+        finalistas = np.array([None])
         # t de cada subset
         t_subset = ganadores.shape[0]//p
         # creamos los subsets
-        print(ganadores)
         for i in range(0,ganadores.shape[0], t_subset):
             subset = ganadores[i:i+t_subset]
-            print(subset)
             while subset.shape[0] != 1: 
                 ronda = []
                 if subset.shape[0] % 2 != 0:
-                    print(subset)
                     ganador =  peguense(subset[0], subset[1])
                     subset = subset[2:]
                     ganador = np.reshape(ganador, (1,ganador.shape[0], ganador.shape[1]))
@@ -182,10 +179,12 @@ def torneo(genes, p):
                     ganador =  peguense(subset[j], subset[j+1])
                     ronda.append(ganador)
                 subset = np.array(ronda)
-            if finalistas:
+            
+            if finalistas.any() == None:
+                finalistas = subset
+            else: 
                 finalistas = np.vstack((finalistas, subset))
-            else:
-                finalistas = subset # mal
+    
 
         ganadores = finalistas
 
@@ -253,7 +252,7 @@ def main(n, p, prob_mutation, max_pasos):
                 optimo = True
                 break
         
-        # print('Iteración ' + str(pasos))
+        print('Iteración ' + str(pasos))
         for i in genes:
             print(i, coste(i))
         # Incremento de los pasos dados
