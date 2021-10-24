@@ -2,6 +2,7 @@
 import numpy as np
 from numpy.random.mtrand import randint
 import random2 as rnd
+import statistics as s 
 
 
 # Define el cuadrado mágico que solucionaremos nxn
@@ -219,6 +220,8 @@ def main(n, p, prob_mutation, max_pasos):
     pasos = 0
     optimo = False
     solution = None
+    medias = []
+    minimos = []
     while pasos < max_pasos or optimo:
         # Crea los hijos y los añade al pool de genes que tenemos 
         for i in range(0, genes.shape[0], 2):
@@ -245,13 +248,23 @@ def main(n, p, prob_mutation, max_pasos):
             if n_rand <= prob_mutation:
                 genes[i] = single_mutacion(genes[i])
         
-        # Comprobación 
+        # Comprobación
+        med = []
+        min = None 
         for i in genes:
-            if coste(i) == 0:
+            c = coste(i)
+            med.append(c)
+            if min == None:
+                min = c
+            if min > c:
+                min = c
+            if c == 0:
                 solution = i
                 optimo = True
-                break
         
+        medias.append(sum(med)/len(med))
+        minimos.append(min)
+
         print('Iteración ' + str(pasos))
         for i in genes:
             print(i, coste(i))
@@ -259,16 +272,15 @@ def main(n, p, prob_mutation, max_pasos):
         pasos += 1
 
     if solution != None:
-        return solution
+        return (medias, minimos ,solution)
     
     else:
-        return genes
+        return (medias, minimos)
 
 
-res = main(3, 8,  0.01, 1000)
+res = main(4, 64,  0.35, 100)
 
-for i in res:
-    print(i, coste(i))
+print(res)
 
 # print('----------------------------')
 # print(peguense(ejemplo1,ejemplo2))
