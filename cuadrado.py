@@ -18,6 +18,7 @@ def constante_magica(n):
 
 # Función de coste
 def coste(matriz):
+    # print(matriz)
     n_magico = constante_magica(matriz.shape[0])
     col_sum = abs(np.sum(matriz,axis=0) - n_magico)
     row_sum = abs(np.sum(matriz,axis=1) - n_magico)
@@ -62,14 +63,13 @@ def single_SIC(m1,m2,cut):
 # Operador SIC 2 puntos
 def double_SIC(m1,m2,cut1,cut2):
     n = m1.shape[0]
+    print(n)
     v1 = np.reshape(m1,n*n)
     v2 = np.reshape(m2,n*n)
     # Desde 1 hasta n^2-1 para que no nos coja los casos en los que la cabeza o la colilla están vacías
     head1 = v1[:cut1]
-    # center1 = v1[cut1:cut2] No es necesario
     tail1 = v1[cut2:]
     head2 = v2[:cut1]
-    # center2 = v2[cut1:cut2] No es necesario
     tail2 = v2[cut2:]
     s1 = np.reshape(np.append(np.append(head1[::-1],descarte(descarte(v2,head1),tail1)),tail1[::-1]),(n,n))
     s2 = np.reshape(np.append(np.append(tail1[::-1],descarte(descarte(v2,head1),tail1)),head1[::-1]),(n,n))
@@ -100,7 +100,7 @@ def quad_mutacion(m1):
     for i in v_a:
         if i>=n*n:
             v_a[i-a]=i-n*n
-    print(v_a)
+    # print(v_a)
     b = randint(n*n-1)
     v_b = np.array(range(b,b+4))
     for i in v_b:
@@ -112,7 +112,7 @@ def quad_mutacion(m1):
         for i in v_b:
             if i>=n*n:
                 v_b[i-b]=i-n*n
-    print(v_b)
+    # print(v_b)
     aux_a = v1[v_a]
     aux_b = v1[v_b]
     j=0
@@ -131,29 +131,70 @@ def peguense(m1,m2):
     return m2 if coste(m1)>coste(m2) else m1
 
 # Define la función de torneo que gestionará cómo se organizan los enfrentamientos 
-def torneo(genes, p):
-    g_trabajo = np.copy(genes)
-    ganadores = []
+'''def torneo(genes, p):
+    ganadores = np.copy(genes)
+    participantes = ganadores.shape[0]
+    while participantes > p:
+        ronda = []
+        np.random.shuffle(ganadores)
+        if ganadores.shape[0] % 2 != 0:
+            ganador = peguense(ganadores[0], ganadores[1])
+            ganadores = np.delete(ganadores, 0)
+            ganadores = np.delete(ganadores, 1) 
+            ganadores = np.append(ganadores, ganador)
+        for i in range(0, ganadores.shape[0], 2):
+            ronda.append(peguense(ganadores[i], ganadores[i+1]))
+            participantes -=1
+            if participantes <= p: break
 
-    while g_trabajo.shape[0] != p:
-        m1_index = np.random.choice(range(g_trabajo.shape[0]))
-        m1 = g_trabajo[m1_index]
-        g_trabajo = np.delete(g_trabajo, m1_index, axis=0)
-        print(g_trabajo)
-        m2_index = np.random.choice(range(g_trabajo.shape[0]))
-        m2 = g_trabajo[m2_index]
-        g_trabajo = np.delete(g_trabajo, m2_index, axis=0)
-        print("m1")
-        print(m1)
-        print("m2")
-        print(m2)
-        ganadores.append(peguense(m1, m2))
+        ganadores = np.array(ronda)
+        print('patata')
         print(ganadores)
-        print(g_trabajo)
+    return ganadores
+'''
+def torneo(genes, p):
+    ganadores = genes.copy()
     
-    return np.array(ganadores)
+    while ganadores.shape[0] > p:
+        #  nos aseguramos de que sea divisible entre p
+        while ganadores.shape[0] % p != 0:
+            ganador =  peguense(ganadores[0], ganadores[1])
+            ganadores = ganadores[2:]
+            subset = np.vstack((ganador, ganadores))
 
-# Define la función de relección proporcional
+        # t de cada subset
+        t_subset = ganadores.shape[0]//p
+        # creamos los subsets
+        print(ganadores)
+        for i in range(0,ganadores.shape[0], t_subset):
+            subset = ganadores[i:i+t_subset]
+            print(subset)
+            while subset.shape[0] != 1: 
+                ronda = []
+                if subset.shape[0] % 2 != 0:
+                    print(subset)
+                    ganador =  peguense(subset[0], subset[1])
+                    subset = subset[2:]
+                    ganador = np.reshape(ganador, (1,ganador.shape[0], ganador.shape[1]))
+                    subset = np.vstack((ganador, subset))
+                
+                for j in range(0, subset.shape[0], 2):
+                    ganador =  peguense(subset[j], subset[j+1])
+                    ronda.append(ganador)
+                subset = np.array(ronda)
+            if finalistas:
+                finalistas = np.vstack((finalistas, subset))
+            else:
+                finalistas = subset # mal
+
+        ganadores = finalistas
+
+    return ganadores
+
+    
+    
+
+# Define la función de selección proporcional
 def ruleta(genes, p):
     aptitudes = [1/coste(i) for i in genes]
     sum_aptitudes = sum(aptitudes)
@@ -161,34 +202,74 @@ def ruleta(genes, p):
     sol = []
     for _ in range(p):
         n_random = np.random.random(1)
-        print(n_random)
         acc = 0
         for i in probabilidades:
             acc += i
             if n_random <= acc:    
-                sol.append(genes[probabilidades.index(i)]) 
+                sol.append(genes[probabilidades.index(i)])
                 break
-        
     return np.array(sol)
 
 # p tiene que ser un número de la forma 2^n por temas de eficiencia computacional
-def main(n, p):
+def main(n, p, prob_mutation, max_pasos):
+    # Inicialización
     genes = [cuadrado_inicial(n) for _ in range(p)]
     genes = np.array(genes)
     np.random.shuffle(genes)
     n_gen = []
-    for i in range(0, genes.shape[0], 2):
-        (cut1, cut2) = randint(1, n*n, size = 2)
-        s = double_SIC(genes[i], genes[i+1], cut1, cut2)
-        n_gen = n_gen + s[0] + s[1] + s[2] + s[3]
-    np.append(genes, n_gen)
-    np.random.shuffle(genes)
-# Torneo
+    pasos = 0
+    optimo = False
+    solution = None
+    while pasos < max_pasos or optimo:
+        # Crea los hijos y los añade al pool de genes que tenemos 
+        for i in range(0, genes.shape[0], 2):
+            '''(cut1, cut2) = randint(1, n*n, sizs)
+            print('GENES 1')
+            print(genes[i+1])
+            s = double_SIC(genes[i], genes[i+1], cut1, cut2)'''
+            cut = randint(1, n*n)
+            s = single_SIC(genes[i], genes[i+1],cut)
+            n_gen = n_gen + list(s)
+     
+        genes = np.concatenate((genes, n_gen))
+        np.random.shuffle(genes)
+
+        # Torneo 
+        genes = torneo(genes, p)
+
+        # Ruleta 
+        #genes = ruleta(genes,p)
+
+        # Mutación
+        for i in range(genes.shape[0]):
+            n_rand = np.random.random()
+            if n_rand <= prob_mutation:
+                genes[i] = single_mutacion(genes[i])
+        
+        # Comprobación 
+        for i in genes:
+            if coste(i) == 0:
+                solution = i
+                optimo = True
+                break
+        
+        # print('Iteración ' + str(pasos))
+        for i in genes:
+            print(i, coste(i))
+        # Incremento de los pasos dados
+        pasos += 1
+
+    if solution != None:
+        return solution
+    
+    else:
+        return genes
 
 
-ejemplo1 = cuadrado_inicial(4)
-ejemplo2 = cuadrado_inicial(4)
+res = main(3, 8,  0.01, 1000)
 
+for i in res:
+    print(i, coste(i))
 
 # print('----------------------------')
 # print(peguense(ejemplo1,ejemplo2))
